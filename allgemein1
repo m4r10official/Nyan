@@ -1,0 +1,142 @@
+import asyncio
+import discord
+import random
+import requests
+import io
+import safygiphy
+
+
+from discord import Client
+client: Client = discord.Client()
+minutes = 0
+hour = 0
+g=safygiphy.Giphy()
+@client.event
+async def on_ready():
+    print('Eingeloggt als')
+    print(client.user.name)
+    print(client.user.id)
+    print('-----------')
+
+    await client.change_presence(game=discord.Game(name="n.help"))
+    @client.event
+async def on_message(message):
+    if message.content.lower().startswith('n.help'):
+        await client.send_message(message.channel, "Commands:"
+                                                   "allgemein --> n.info allgemein"
+                                                   "gif'S --> n.info gif")
+
+    if message.content.startswith('n.info allgemein'):
+        await client.send_message(message.channel, " Commands:"
+                                                   " n.uptime/"
+                                                   " n.game (NAME)")
+
+
+    if message.content.startswith('n.info gif'):
+        await client.send_message(message.channel, "Commands:"
+                                                   " n.cry/"
+                                                   " n.hug/"
+                                                   " n.kill/"
+                                                   " n.lick/"
+                                                   " n.loading/"
+                                                   " n.nyan /"
+                                                   " n.gif --> random gif/")
+
+
+
+
+    if message.content.startswith('n.game'):
+        game = message.content[7:]
+        await client.change_presence(game=discord.Game(name=game))
+        await client.send_message(message.channel, "Der Status wurde zu **" + game + "** gäendert")
+
+    if message.content.startswith('n.uptime'):
+        await client.send_message(message.channel,
+                                  "`Uptime:{0} stunde/n und {1} minuten auf {2}. `".format(hour, minutes,
+                                                                                           message.server)) \
+
+
+
+    if message.content.lower().startswith('n.loading'):
+        choice = random.randint(1, 2)
+        if choice == 1:
+            response = requests.get('http://ab-sofort-rauchfrei.de/wp-content/uploads/2016/11/sofort-Rauchfrei-Ladebalken.gif', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+        if choice == 2:
+            response = requests.get('https://www.bast-aadv.de/Bilder/loader.gif', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+    if message.content.lower().startswith('n.hug'):
+        choice = random.randint(1, 2)
+        if choice == 1:
+            response = requests.get('https://i.pinimg.com/originals/a2/4c/73/a24c73be7927537b25cd924d8e014fb9.gif', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+        if choice == 2:
+            response = requests.get('https://78.media.tumblr.com/5dfb67d0a674fe5f81950478f5b2d4ed/tumblr_ofd4e2h8O81ub9qlao1_500.gif', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+    if message.content.lower().startswith('n.kill'):
+            response = requests.get('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe_Nw1duHvBcrL6i_aIBPimqyYOpk7wxJDD7s5rW5QzcnXdvWPsA', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+
+    if message.content.lower().startswith('n.lick'):
+            response = requests.get('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREyZ9jtwTNsZPdS-FqRQ0zK1FkIPJM0LE9A-eMuif1O30lP2oo-w', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+    if message.content.lower().startswith('n.cry'):
+            response = requests.get('https://steamusercontent-a.akamaihd.net/ugc/92728539533458428/BECF0C792CA6191021232067A8954CFE27340078/', stream=True)
+            await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='bild.gif')
+
+
+
+    if message.content.startswith('n.gif'):
+        gif_tag = message.content[5:]
+        rgif = g.random(tag=str(gif_tag))
+        response = requests.get(
+            str(rgif.get("data", {}).get('image_original_url')), stream=True
+        )
+        await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='video.gif')
+
+    if message.content.startswith('n.nyan'):
+        gif_tag = "Nyan cat"
+        rgif = g.random(tag=str(gif_tag))
+        response = requests.get(
+            str(rgif.get("data", {}).get('image_original_url')), stream=True
+        )
+        await client.send_file(message.channel, io.BytesIO(response.raw.read()), filename='video.gif')
+
+
+
+@client.event
+async def on_member_join(member):
+    serverchannel = member.server.default_channel
+    msg = "Hi, {0} willkommen auf {1}! Bitte wirf kurz ein blick in unsere Regeln:) Bei fragen wende dich einfac an einen Moderatur (DULLIS) oder an den Admin".format(member.mention, member.server.name)
+    await client.send_message(serverchannel, msg)
+
+
+@client.event
+async def on_member_remove(member):
+    serverchannel = member.server.default_channel
+    msg = "Bye Bye {0}".format(member.mention)
+    await client.send_message(serverchannel, msg)
+    
+async def server_time():
+    await client.wait_until_ready()
+    global minutes
+    minutes = 0
+    global hour
+    hour = 0
+    while not client.is_closed:
+        await asyncio.sleep(60)
+        minutes += 1
+        if minutes == 60:
+            minutes = 0
+            hour += 1
+
+
+client.loop.create_task(server_time())
+
+client.run('NDQ0MTQ2NjIyMzk4NDY0MDAx.DdXsNQ.qO1yUP_LIr5ANfNpLlyZup8UkZ4')
